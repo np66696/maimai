@@ -62,25 +62,24 @@ canvas#main-canvas {
 
 .hud-top-bar {
   position: absolute;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: max(8px, env(safe-area-inset-top, 8px));
+  left: max(10px, env(safe-area-inset-left, 10px));
+  transform: none;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 6px;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   backdrop-filter: blur(12px);
-  padding: 8px 18px;
-  border-radius: 40px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 240, 255, 0.2);
-  min-width: 380px;
-  max-width: 90vw;
+  padding: 4px 8px;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 12px rgba(0, 240, 255, 0.2);
+  min-width: 0;
+  max-width: min(180px, calc(50vw - 48vh - 12px));
   pointer-events: none;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.35s ease,
-              left 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              max-width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+  z-index: 20;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease,
               box-shadow 0.3s ease;
 }
 
@@ -93,28 +92,28 @@ canvas#main-canvas {
   pointer-events: auto !important;
 }
 
-/* 试玩模式（非 auto 模式）打歌时自动向上平滑滑动隐藏，暂停或单曲结束时再滑出恢复 */
+/* 试玩打歌或播放隐藏状态：平滑向上滑移并淡出，彻底清除打歌视野障碍 */
 .hud-top-bar.gameplay-hidden,
 .arcade-hud.gameplay-hidden .hud-top-bar {
-  transform: translateY(-140%) !important;
+  transform: translateY(-160%) !important;
   opacity: 0 !important;
   pointer-events: none !important;
 }
 
-/* 非 auto 模式（试玩/手动打歌模式）顶栏平滑滑移至左侧空白处，彻底避免遮挡顶部 8 号与 1 号按键 */
+/* 左侧锚定安全状态 (保留类名兼容性) */
 .hud-top-bar.dock-left,
 .arcade-hud.manual-mode .hud-top-bar,
 body.platform-apk .hud-top-bar {
-  left: max(18px, env(safe-area-inset-left, 18px));
-  transform: translateX(0);
+  left: max(10px, env(safe-area-inset-left, 10px));
+  transform: none;
   min-width: 0;
-  max-width: min(380px, calc(50vw - 20px));
+  max-width: min(180px, calc(50vw - 48vh - 12px));
 }
 
 .hud-jacket-wrap {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   overflow: hidden;
   background: #111;
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -130,7 +129,7 @@ body.platform-apk .hud-top-bar {
 .hud-song-info {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   overflow: hidden;
   flex: 1;
   min-width: 0;
@@ -139,18 +138,20 @@ body.platform-apk .hud-top-bar {
 .hud-title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
+  overflow: hidden;
 }
 
 .hud-difficulty-badge {
-  font-size: 11px;
+  font-size: 8.5px;
   font-weight: 900;
-  padding: 2px 7px;
-  border-radius: 4px;
+  padding: 1px 4px;
+  border-radius: 3px;
   background: linear-gradient(135deg, #a020f0, #ff007f);
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
+  flex-shrink: 0;
 }
 
 .hud-difficulty-badge.badge-easy { background: linear-gradient(135deg, #10b981, #059669); }
@@ -162,57 +163,69 @@ body.platform-apk .hud-top-bar {
 .hud-difficulty-badge.badge-utage { background: linear-gradient(135deg, #ec4899, #f43f5e); }
 
 .hud-title {
-  font-size: 15px;
+  font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 0 8px rgba(0, 240, 255, 0.5);
+  text-shadow: 0 0 6px rgba(0, 240, 255, 0.5);
+  min-width: 0;
 }
 
 .hud-artist-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 12px;
+  gap: 4px;
+  font-size: 9px;
   color: #a0a8c0;
+  overflow: hidden;
+}
+
+.hud-artist {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 9px;
+  min-width: 0;
 }
 
 .hud-bpm-tag {
   background: rgba(255, 255, 255, 0.1);
-  padding: 1px 6px;
-  border-radius: 10px;
-  font-size: 11px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-size: 8.5px;
   color: #00f0ff;
   font-weight: bold;
+  flex-shrink: 0;
+  line-height: 1.1;
 }
 
 .hud-pause-btn {
-  margin-left: 12px;
-  width: 32px;
-  height: 32px;
+  margin-left: 2px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: rgba(0, 240, 255, 0.15);
   border: 1px solid rgba(0, 240, 255, 0.4);
   color: #00f0ff;
-  font-size: 13px;
+  font-size: 11px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.15s ease;
-  pointer-events: auto;
+  pointer-events: auto !important;
   flex-shrink: 0;
 }
 
 .hud-pause-btn:hover {
   background: rgba(0, 240, 255, 0.35);
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.7);
-  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+  transform: scale(1.08);
 }
 
 .hud-pause-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 /* ================= 中央 COMBO 与分数 ================= */
@@ -2316,40 +2329,47 @@ body.platform-apk #flank-buttons-toggle-row {
 
 /* ================= 移动端 / 异形屏 (Notch / Cutout) 深度适配 ================= */
 @media (max-height: 550px), (max-width: 900px) {
-  /* 顶部 HUD 紧凑化并靠左侧边距锚定，彻底避免遮挡正上方 8 号与 1 号点击区 */
+  /* 顶部 HUD 紧凑化并靠左侧边距锚定，彻底避免遮挡正上方 8 号与 1 号点击区及左侧谱面 */
   .hud-top-bar {
     top: max(6px, env(safe-area-inset-top, 6px));
-    left: max(12px, env(safe-area-inset-left, 12px));
+    left: max(8px, env(safe-area-inset-left, 8px));
     transform: none;
-    padding: 4px 12px;
-    gap: 8px;
+    padding: 3px 6px;
+    gap: 5px;
     min-width: 0;
-    max-width: min(320px, 42vw);
-    border-radius: 24px;
+    max-width: min(175px, calc(50vw - 48vh - 10px));
+    border-radius: 16px;
     pointer-events: none;
   }
 
   .hud-top-bar.dock-left,
   .arcade-hud.manual-mode .hud-top-bar {
-    left: max(12px, env(safe-area-inset-left, 12px));
+    left: max(8px, env(safe-area-inset-left, 8px));
     transform: none;
-    max-width: min(320px, 42vw);
+    max-width: min(175px, calc(50vw - 48vh - 10px));
+  }
+
+  .hud-top-bar.gameplay-hidden,
+  .arcade-hud.gameplay-hidden .hud-top-bar {
+    transform: translateY(-160%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
   }
 
   .hud-jacket-wrap {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 5px;
   }
 
   .hud-title {
-    font-size: 12px;
-    max-width: 140px;
+    font-size: 10px;
+    max-width: 75px;
   }
 
   .hud-artist {
-    font-size: 9px;
-    max-width: 140px;
+    font-size: 8.5px;
+    max-width: 55px;
   }
 
   .hud-badge {
