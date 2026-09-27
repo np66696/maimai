@@ -188,11 +188,11 @@ class MaimaiApp {
   }
 
   private updateConsoleVisibility(): void {
-    // 在关闭 auto 模式 (试玩打歌模式) 且正在播放时，自动平滑隐藏双翼控制台与顶部浮窗
-    // 暂停打歌或单曲结束时，自动平滑滑出复位，保证最纯净的打歌视野
-    const shouldHide = !this.isAutoPlay && this.audio.isPlaying;
-    this.console.setGameplayHidden(shouldHide);
-    this.hud.setGameplayHidden(shouldHide);
+    // 在关闭 auto 模式 (试玩打歌模式) 且正在播放时，自动平滑隐藏双翼控制台
+    // 手动模式顶栏不移除，始终常驻左侧空白安全区，方便随时查看曲名信息与点击暂停
+    const shouldHideConsole = !this.isAutoPlay && this.audio.isPlaying;
+    this.console.setGameplayHidden(shouldHideConsole);
+    this.hud.setGameplayHidden(false);
     // 同步顶栏状态：非 auto 模式时移至左侧空白区域
     this.hud.setAutoPlay(this.isAutoPlay);
   }
