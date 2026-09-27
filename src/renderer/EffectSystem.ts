@@ -92,8 +92,9 @@ export class EffectSystem {
       mainColor = '#22cc88';
     }
 
-    // 3. 产生爆破粒子
-    const particleCount = isBreak ? 32 : 18;
+    // 3. 产生爆破粒子（移动端/触摸屏下自适应精简粒子数，杜绝海量高频打击时的卡顿）
+    const isMobileDevice = typeof window !== 'undefined' && ('ontouchstart' in window || (typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0));
+    const particleCount = isMobileDevice ? (isBreak ? 14 : 8) : (isBreak ? 24 : 14);
     for (let i = 0; i < particleCount; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = (Math.random() * 200 + 90) * (isBreak ? 1.6 : 1.0);
@@ -121,14 +122,14 @@ export class EffectSystem {
     });
 
     // 内存与性能防护：限制最大存活实体数量，防止极高连击时内存暴涨
-    if (this.particles.length > 250) {
-      this.particles.splice(0, this.particles.length - 200);
+    if (this.particles.length > 150) {
+      this.particles.splice(0, this.particles.length - 120);
     }
-    if (this.shockwaves.length > 30) {
-      this.shockwaves.splice(0, this.shockwaves.length - 20);
+    if (this.shockwaves.length > 25) {
+      this.shockwaves.splice(0, this.shockwaves.length - 15);
     }
-    if (this.banners.length > 20) {
-      this.banners.splice(0, this.banners.length - 15);
+    if (this.banners.length > 16) {
+      this.banners.splice(0, this.banners.length - 10);
     }
   }
 
@@ -171,8 +172,9 @@ export class EffectSystem {
 
   render(ctx: CanvasRenderingContext2D): void {
     ctx.save();
+    ctx.shadowBlur = 0; // 默认关闭全局阴影模糊，杜绝移动端 CPU/GPU 高斯模糊滤镜开销
 
-    // 1. 绘制冲击波
+    // 1. 绘制冲击波（双层同心圆拟合发光，比 shadowBlur 快数十倍）
     for (const s of this.shockwaves) {
       const alpha = Math.max(0, s.life / s.maxLife);
       ctx.beginPath();
@@ -180,20 +182,23 @@ export class EffectSystem {
       ctx.strokeStyle = s.color;
       ctx.lineWidth = 3.5 * alpha;
       ctx.globalAlpha = alpha;
-      ctx.shadowColor = s.color;
-      ctx.shadowBlur = 12;
+      ctx.stroke();
+
+      // 外发光层
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+      ctx.lineWidth = 7.0 * alpha;
+      ctx.globalAlpha = alpha * 0.35;
       ctx.stroke();
     }
 
-    // 2. 绘制粒子
+    // 2. 绘制粒子（直接使用纯色透明度渲染，零卡顿）
     for (const p of this.particles) {
       const alpha = Math.max(0, p.life / p.maxLife);
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size * alpha, 0, Math.PI * 2);
       ctx.fillStyle = p.color;
       ctx.globalAlpha = alpha;
-      ctx.shadowColor = p.color;
-      ctx.shadowBlur = 8;
       ctx.fill();
     }
 

@@ -72,38 +72,46 @@ export class TrackRenderer {
         ctx.save();
         ctx.translate(pos.x, pos.y);
 
-        // 绘制按键外轮廓胶囊/圆盘
-        const badgeR = 19;
+        // 绘制按键外轮廓胶囊/圆盘 (随屏幕半径自适应放大，便于移动端手指点击识别)
+        const badgeR = Math.max(22, Math.min(30, maxRadius * 0.11));
         ctx.beginPath();
         ctx.arc(0, 0, badgeR, 0, Math.PI * 2);
         if (isDown) {
           ctx.fillStyle = theme.judgeRing;
-          ctx.shadowColor = theme.judgeRing;
-          ctx.shadowBlur = 14;
+          ctx.shadowBlur = 0;
           ctx.fill();
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2.5;
+          ctx.lineWidth = 3;
+          ctx.stroke();
+
+          // 额外发光外圈，零 shadowBlur 消耗
+          ctx.beginPath();
+          ctx.arc(0, 0, badgeR + 3, 0, Math.PI * 2);
+          ctx.strokeStyle = theme.judgeRing;
+          ctx.lineWidth = 2;
           ctx.stroke();
         } else {
           ctx.fillStyle = 'rgba(15, 20, 36, 0.85)';
           ctx.shadowBlur = 0;
           ctx.fill();
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
           ctx.lineWidth = 1.5;
           ctx.stroke();
         }
 
         // 上方小字：按键编号 #1..#8
-        ctx.fillStyle = isDown ? 'rgba(0, 0, 0, 0.75)' : 'rgba(255, 215, 0, 0.85)';
-        ctx.font = 'bold 9px -apple-system, sans-serif';
+        ctx.fillStyle = isDown ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 215, 0, 0.95)';
+        ctx.font = `bold ${Math.round(badgeR * 0.45)}px -apple-system, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(`${i}`, 0, -8);
+        ctx.fillText(`${i}`, 0, -badgeR * 0.38);
 
         // 下方大字：键盘映射键位 [W], [E], [D] 等
         ctx.fillStyle = isDown ? '#000000' : '#ffffff';
-        ctx.font = '900 13px -apple-system, sans-serif';
-        ctx.fillText(keyLabel, 0, 5);
+        ctx.font = `900 ${Math.round(badgeR * 0.6)}px -apple-system, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(keyLabel, 0, badgeR * 0.3);
 
         ctx.restore();
       }

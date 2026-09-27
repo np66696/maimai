@@ -420,6 +420,17 @@ export class ControlConsole {
       rightToggle.textContent = this.isRightCollapsed ? '◀' : '▶';
     });
 
+    // 移动端/APK/小屏幕自适应：默认折叠两侧控制台，优先展示纯净开阔的游戏打歌画面
+    const isMobileDevice = isApkPlatform() || (typeof window !== 'undefined' && (window.innerWidth <= 900 || window.innerHeight <= 520));
+    if (isMobileDevice) {
+      this.isLeftCollapsed = true;
+      this.isRightCollapsed = true;
+      this.leftContainer.classList.add('collapsed');
+      this.rightContainer.classList.add('collapsed');
+      if (leftToggle) leftToggle.textContent = '▶';
+      if (rightToggle) rightToggle.textContent = '◀';
+    }
+
     // 初始化音量 UI 状态
     this.prevMusicVol = audio.volume > 0.01 ? audio.volume : 0.8;
     this.prevSfxVol = audio.sfxVolume > 0.01 ? audio.sfxVolume : 0.9;

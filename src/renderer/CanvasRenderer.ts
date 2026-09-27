@@ -25,6 +25,8 @@ export class CanvasRenderer {
 
   private center: Point = { x: 400, y: 400 };
   private maxRadius: number = 360;
+  private viewWidth: number = 800;
+  private viewHeight: number = 800;
   private lastFrameTime: number = 0;
   private animFrameId: number | null = null;
 
@@ -79,13 +81,16 @@ export class CanvasRenderer {
   handleResize(): void {
     const parent = this.canvas.parentElement || document.body;
     const rect = parent.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
+    // 性能优化：限制移动端最高 2.0 DPR，防范 3x/3.5x AMOLED 屏幕导致像素填充率过载卡顿
+    const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
 
     const width = rect.width || window.innerWidth;
     const height = rect.height || window.innerHeight;
+    this.viewWidth = width;
+    this.viewHeight = height;
 
-    this.canvas.width = width * dpr;
-    this.canvas.height = height * dpr;
+    this.canvas.width = Math.round(width * dpr);
+    this.canvas.height = Math.round(height * dpr);
     this.canvas.style.width = `${width}px`;
     this.canvas.style.height = `${height}px`;
 
@@ -93,7 +98,11 @@ export class CanvasRenderer {
     this.ctx.scale(dpr, dpr);
 
     this.center = { x: width / 2, y: height / 2 };
-    this.maxRadius = Math.min(width, height) * 0.44;
+    // 移动端横屏/异形屏适配：当屏幕高度较小（<= 520px）且为宽屏时，扩大机台圆形半径至 0.475（占满高度的 95%），显著放大按键与判定区
+    const isMobileLandscape = height <= 520 && width > height;
+    this.maxRadius = isMobileLandscape
+      ? Math.min(width, height) * 0.475
+      : Math.min(width, height) * 0.44;
   }
 
   start(): void {
@@ -149,11 +158,9 @@ export class CanvasRenderer {
     // 3. 更新粒子系统
     this.effectSystem.update(dt);
 
-    // 4. 清除并重绘画布背景
-    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
+    // 4. 重绘画布背景（直接绘制视口尺寸，避免重复 clearRect 与 DPR 冗余像素填充）
     ctx.fillStyle = theme.bgFill;
-    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.fillRect(0, 0, this.viewWidth, this.viewHeight);
 
     // 5. 绘制机台底盘与判定圈
     const effectiveDuration = this.chart?.duration || this.audio.duration;
