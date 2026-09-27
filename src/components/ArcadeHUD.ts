@@ -128,7 +128,18 @@ export class ArcadeHUD {
       this.container.appendChild(toast);
     }
 
-    toast.innerHTML = `<span class="toast-sparkle">✨</span> <span class="toast-text">${message}</span>`;
+    const sparkleSpan = document.createElement('span');
+    sparkleSpan.className = 'toast-sparkle';
+    sparkleSpan.textContent = '✨';
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'toast-text';
+    textSpan.textContent = message;
+
+    toast.innerHTML = '';
+    toast.appendChild(sparkleSpan);
+    toast.appendChild(document.createTextNode(' '));
+    toast.appendChild(textSpan);
     toast.classList.remove('hidden');
     toast.classList.add('visible');
 

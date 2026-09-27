@@ -2,6 +2,7 @@ import { AstroDxService, AstroDxEntry } from '../core/AstroDxService';
 import { AdxLoader, LoadedAdxPackage } from '../core/AdxLoader';
 import { DownloadModal } from './DownloadModal';
 import { ChartLibraryService, SavedSongItem } from '../core/ChartLibraryService';
+import { escapeHtml } from '../utils/security';
 
 export interface SongItem {
   id: string;
@@ -395,7 +396,7 @@ export class SongSelectorModal {
     }
 
     if (filtered.length === 0) {
-      grid.innerHTML = `<div class="grid-empty">未找到匹配「${this.librarySearchKeyword}」的已保存曲目</div>`;
+      grid.innerHTML = `<div class="grid-empty">未找到匹配「${escapeHtml(this.librarySearchKeyword)}」的已保存曲目</div>`;
       return;
     }
 
@@ -436,29 +437,33 @@ export class SongSelectorModal {
         ? new Date(song.addedAt).toLocaleDateString()
         : '';
 
+      const safeTitle = escapeHtml(song.title);
+      const safeArtist = escapeHtml(song.artist);
+      const safeGenre = escapeHtml(song.genre || 'ORIGINAL');
+
       card.innerHTML = `
         <div class="adx-card-jacket">
-          <img src="${coverUrl}" loading="lazy" onerror="this.src='./songs/garakuta/jacket.svg'" alt="${song.title}" />
+          <img src="${coverUrl}" loading="lazy" onerror="this.src='./songs/garakuta/jacket.svg'" alt="${safeTitle}" />
           <span class="lib-source-tag ${sourceInfo.cls}">${sourceInfo.label}</span>
         </div>
         <div class="adx-card-info">
           <div class="lib-card-header">
-            <div class="adx-card-title" title="${song.title}">${song.title}</div>
+            <div class="adx-card-title" title="${safeTitle}">${safeTitle}</div>
             <span class="lib-card-size">${ChartLibraryService.formatBytes(song.fileSize)}</span>
           </div>
-          <div class="adx-card-artist" title="${song.artist}">${song.artist}</div>
+          <div class="adx-card-artist" title="${safeArtist}">${safeArtist}</div>
           <div class="adx-card-meta">
-            <span class="adx-genre-tag">${song.genre || 'ORIGINAL'}</span>
+            <span class="adx-genre-tag">${safeGenre}</span>
             <span class="adx-bpm-tag">BPM ${song.bpm || '-'}</span>
-            ${dateStr ? `<span class="lib-date-tag">${dateStr}</span>` : ''}
+            ${dateStr ? `<span class="lib-date-tag">${escapeHtml(dateStr)}</span>` : ''}
           </div>
 
           <!-- 难度按钮选择栏 -->
           <div class="adx-diff-row">
             ${song.difficulties.map(d => `
-              <button class="adx-diff-btn diff-${d.name.toLowerCase().replace(':', '')}" data-slot="${d.slot}" title="${d.name} ${d.level}">
-                <span class="diff-name">${d.name.slice(0, 3)}</span>
-                <span class="diff-lv">${d.level}</span>
+              <button class="adx-diff-btn diff-${escapeHtml(d.name.toLowerCase().replace(':', ''))}" data-slot="${d.slot}" title="${escapeHtml(d.name)} ${escapeHtml(d.level)}">
+                <span class="diff-name">${escapeHtml(d.name.slice(0, 3))}</span>
+                <span class="diff-lv">${escapeHtml(d.level)}</span>
               </button>
             `).join('')}
           </div>
@@ -628,26 +633,31 @@ export class SongSelectorModal {
       const coverUrl = entry.media?.cover_url || `https://astrodx-charts-alice.saop.cc/${folder}/bg.png`;
       const isSaved = savedIds.has(`astrodx_${entry.short_id}`);
 
+      const safeTitle = escapeHtml(entry.title);
+      const safeArtist = escapeHtml(entry.artist);
+      const safeGenre = escapeHtml(entry.genre);
+      const safeVersion = escapeHtml(entry.version);
+
       card.innerHTML = `
         <div class="adx-card-jacket">
-          <img src="${coverUrl}" loading="lazy" onerror="this.src='./songs/garakuta/jacket.svg'" alt="${entry.title}" />
-          <span class="adx-version-badge">${entry.version}</span>
+          <img src="${coverUrl}" loading="lazy" onerror="this.src='./songs/garakuta/jacket.svg'" alt="${safeTitle}" />
+          <span class="adx-version-badge">${safeVersion}</span>
           ${isSaved ? `<span class="adx-saved-badge">✅ 已保存在曲库</span>` : ''}
         </div>
         <div class="adx-card-info">
-          <div class="adx-card-title" title="${entry.title}">${entry.title}</div>
-          <div class="adx-card-artist" title="${entry.artist}">${entry.artist}</div>
+          <div class="adx-card-title" title="${safeTitle}">${safeTitle}</div>
+          <div class="adx-card-artist" title="${safeArtist}">${safeArtist}</div>
           <div class="adx-card-meta">
-            <span class="adx-genre-tag">${entry.genre}</span>
+            <span class="adx-genre-tag">${safeGenre}</span>
             <span class="adx-bpm-tag">BPM ${entry.bpm || '-'}</span>
           </div>
 
           <!-- 难度按钮选择栏 -->
           <div class="adx-diff-row">
             ${entry.difficulties.map(d => `
-              <button class="adx-diff-btn diff-${d.name.toLowerCase().replace(':', '')}" data-slot="${d.slot}" title="${d.name} (${d.designer || '-'})">
-                <span class="diff-name">${d.name.slice(0, 3)}</span>
-                <span class="diff-lv">${d.level}</span>
+              <button class="adx-diff-btn diff-${escapeHtml(d.name.toLowerCase().replace(':', ''))}" data-slot="${d.slot}" title="${escapeHtml(d.name)} (${escapeHtml(d.designer || '-')})">
+                <span class="diff-name">${escapeHtml(d.name.slice(0, 3))}</span>
+                <span class="diff-lv">${escapeHtml(d.level)}</span>
               </button>
             `).join('')}
           </div>
@@ -814,20 +824,23 @@ export class SongSelectorModal {
     for (const song of this.presetSongs) {
       const card = document.createElement('div');
       card.className = 'song-card';
+      const safeTitle = escapeHtml(song.title);
+      const safeArtist = escapeHtml(song.artist);
+
       card.innerHTML = `
         <div class="song-card-jacket">
-          <img src="${song.jacketUrl}" alt="${song.title}" />
+          <img src="${song.jacketUrl}" alt="${safeTitle}" />
         </div>
         <div class="song-card-details">
-          <div class="song-card-title">${song.title}</div>
-          <div class="song-card-artist">${song.artist}</div>
+          <div class="song-card-title">${safeTitle}</div>
+          <div class="song-card-artist">${safeArtist}</div>
           <div class="song-card-bpm">BPM ${song.bpm}</div>
           <div class="song-card-diffs">
             ${song.difficulties
               .map(
                 d => `
-                <button class="diff-btn diff-${d.name.toLowerCase().replace(':', '')}" data-diff="${d.inoteKey}">
-                  ${d.name} ${d.level}
+                <button class="diff-btn diff-${escapeHtml(d.name.toLowerCase().replace(':', ''))}" data-diff="${d.inoteKey}">
+                  ${escapeHtml(d.name)} ${escapeHtml(d.level)}
                 </button>
               `
               )

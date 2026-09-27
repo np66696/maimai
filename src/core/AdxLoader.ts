@@ -1,4 +1,5 @@
 import { unzipSync } from 'fflate';
+import { sanitizePath, truncateSafe } from '../utils/security';
 
 export interface AdxDifficultyInfo {
   slot: number;
@@ -113,6 +114,11 @@ export class AdxLoader {
    * 同步或异步解压并提取 .adx 内部文件
    */
   static loadFromUint8Array(uint8: Uint8Array, fileName: string = 'chart.adx'): LoadedAdxPackage {
+    // 1. 防御超大文件与内存溢出 (250MB 上限)
+    if (uint8.length > 250 * 1024 * 1024) {
+      throw new Error('文件体积超过 250MB 限制，拒绝解析以防内存崩溃');
+    }
+
     let unzipped: Record<string, Uint8Array>;
     try {
       unzipped = unzipSync(uint8);
@@ -120,9 +126,13 @@ export class AdxLoader {
       throw new Error(`解压 .adx 失败，文件可能已损坏或非标准 Zip 格式: ${err.message}`);
     }
 
-    const entryKeys = Object.keys(unzipped);
+    // 过滤带有目录穿越与非法空字符的 Zip 条目
+    const entryKeys = Object.keys(unzipped).filter(k => {
+      const sanitized = sanitizePath(k);
+      return !k.includes('..') && !k.includes('\0') && !k.startsWith('/') && sanitized.length > 0;
+    });
     if (entryKeys.length === 0) {
-      throw new Error('.adx 压缩包内为空，未找到任何文件');
+      throw new Error('.adx 压缩包内为空或所有文件均为非法路径');
     }
 
     // 1. 查找 maidata.txt 谱面文本
@@ -221,10 +231,16 @@ export class AdxLoader {
     const bpmMatch = maidataText.match(/&(?:wholebpm|bpm)\s*=\s*([^\r\n]+)/i);
     const firstMatch = maidataText.match(/&first\s*=\s*([^\r\n]+)/i);
 
-    const title = titleMatch ? titleMatch[1].trim() : fileName.replace(/\.(adx|zip)$/i, '');
-    const artist = artistMatch ? artistMatch[1].trim() : 'Unknown Artist';
-    const bpm = bpmMatch ? parseFloat(bpmMatch[1]) || 120 : 120;
-    const first = firstMatch ? parseFloat(firstMatch[1]) || 0 : 0;
+    const rawTitle = titleMatch ? titleMatch[1].trim() : fileName.replace(/\.(adx|zip)$/i, '');
+    const rawArtist = artistMatch ? artistMatch[1].trim() : 'Unknown Artist';
+    const title = truncateSafe(rawTitle.replace(/[\x00-\x1f\x7f]/g, ''), 150) || 'Untitled';
+    const artist = truncateSafe(rawArtist.replace(/[\x00-\x1f\x7f]/g, ''), 150) || 'Unknown Artist';
+    
+    let bpm = bpmMatch ? parseFloat(bpmMatch[1]) || 120 : 120;
+    if (isNaN(bpm) || bpm <= 0 || bpm > 2000) bpm = 120;
+    
+    let first = firstMatch ? parseFloat(firstMatch[1]) || 0 : 0;
+    if (isNaN(first) || Math.abs(first) > 3600) first = 0;
 
     // 5. 提取可用难度
     const difficulties = this.extractDifficulties(maidataText);

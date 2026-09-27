@@ -253,6 +253,17 @@ class MaimaiApp {
     }
   }
 
+  private setCoverUrl(url: string = ''): void {
+    if (this.currentCoverUrl && this.currentCoverUrl.startsWith('blob:') && this.currentCoverUrl !== url) {
+      try {
+        URL.revokeObjectURL(this.currentCoverUrl);
+      } catch {
+        // 忽略非浏览器环境错误
+      }
+    }
+    this.currentCoverUrl = url;
+  }
+
   private async loadPresetSong(song: SongItem, diffIdx: number): Promise<void> {
     this.currentSong = song;
     if (this.audio.isPlaying) {
@@ -271,7 +282,7 @@ class MaimaiApp {
         }));
       }
 
-      this.currentCoverUrl = song.jacketUrl;
+      this.setCoverUrl(song.jacketUrl);
 
       if (song.audioUrl) {
         await this.audio.loadTrack(song.audioUrl);
@@ -301,7 +312,7 @@ class MaimaiApp {
     try {
       this.currentMaidataText = chartText;
       this.currentDifficulties = AdxLoader.extractDifficulties(chartText);
-      this.currentCoverUrl = coverUrl || '';
+      this.setCoverUrl(coverUrl || '');
 
       if (audioSource) {
         await this.audio.loadTrack(audioSource);
@@ -333,7 +344,7 @@ class MaimaiApp {
     try {
       this.currentMaidataText = pkg.maidataText;
       this.currentDifficulties = pkg.difficulties;
-      this.currentCoverUrl = pkg.coverUrl || '';
+      this.setCoverUrl(pkg.coverUrl || '');
 
       if (pkg.audioBlob) {
         await this.audio.loadTrack(pkg.audioBlob);

@@ -15,6 +15,7 @@ export class InputController {
   private callbacks: InputCallbacks;
   private keybindManager = KeybindManager.getInstance();
   private activeLanes: Set<number> = new Set();
+  private cleanups: (() => void)[] = [];
 
   constructor(canvas: HTMLCanvasElement, callbacks: InputCallbacks) {
     this.canvas = canvas;
@@ -25,7 +26,7 @@ export class InputController {
   }
 
   private bindKeyboard(): void {
-    window.addEventListener('keydown', e => {
+    const onKeyDown = (e: KeyboardEvent) => {
       // 避免在输入框中打字时误触
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return;
@@ -66,14 +67,22 @@ export class InputController {
         this.activeLanes.add(lane);
         this.callbacks.onLaneDown(lane);
       }
-    });
+    };
 
-    window.addEventListener('keyup', e => {
+    const onKeyUp = (e: KeyboardEvent) => {
       const lane = this.keybindManager.getLaneByCode(e.code);
       if (lane && this.activeLanes.has(lane)) {
         this.activeLanes.delete(lane);
         this.callbacks.onLaneUp(lane);
       }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+
+    this.cleanups.push(() => {
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
     });
   }
 
@@ -128,5 +137,17 @@ export class InputController {
     this.canvas.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointerup', handlePointerUp);
     window.addEventListener('pointercancel', handlePointerUp);
+
+    this.cleanups.push(() => {
+      this.canvas.removeEventListener('pointerdown', handlePointerDown);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    });
+  }
+
+  dispose(): void {
+    this.cleanups.forEach(fn => fn());
+    this.cleanups = [];
+    this.activeLanes.clear();
   }
 }

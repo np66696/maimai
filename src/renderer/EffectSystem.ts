@@ -119,38 +119,52 @@ export class EffectSystem {
       life: 0.38,
       maxLife: 0.38
     });
+
+    // 内存与性能防护：限制最大存活实体数量，防止极高连击时内存暴涨
+    if (this.particles.length > 250) {
+      this.particles.splice(0, this.particles.length - 200);
+    }
+    if (this.shockwaves.length > 30) {
+      this.shockwaves.splice(0, this.shockwaves.length - 20);
+    }
+    if (this.banners.length > 20) {
+      this.banners.splice(0, this.banners.length - 15);
+    }
   }
 
   update(dt: number): void {
-    // 更新粒子
+    // 更新粒子 (swap-and-pop O(1) 高效移除，避免 O(N) 内存移位)
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.life -= dt;
       if (p.life <= 0) {
-        this.particles.splice(i, 1);
+        this.particles[i] = this.particles[this.particles.length - 1];
+        this.particles.pop();
       }
     }
 
-    // 更新冲击波
+    // 更新冲击波 (swap-and-pop O(1) 移除)
     for (let i = this.shockwaves.length - 1; i >= 0; i--) {
       const s = this.shockwaves[i];
       s.life -= dt;
       const progress = 1 - s.life / s.maxLife;
       s.radius = s.maxRadius * progress;
       if (s.life <= 0) {
-        this.shockwaves.splice(i, 1);
+        this.shockwaves[i] = this.shockwaves[this.shockwaves.length - 1];
+        this.shockwaves.pop();
       }
     }
 
-    // 更新判定标
+    // 更新判定标 (swap-and-pop O(1) 移除)
     for (let i = this.banners.length - 1; i >= 0; i--) {
       const b = this.banners[i];
       b.life -= dt;
       b.y -= 14 * dt; // 向上飘动
       if (b.life <= 0) {
-        this.banners.splice(i, 1);
+        this.banners[i] = this.banners[this.banners.length - 1];
+        this.banners.pop();
       }
     }
   }

@@ -533,10 +533,16 @@ export class ControlConsole {
       const btn = document.createElement('button');
       const diffClass = `diff-${diff.name.toLowerCase().replace(':', '')}`;
       btn.className = `flank-diff-choice-btn ${diffClass} ${diff.slot === activeSlot ? 'active' : ''}`;
-      btn.innerHTML = `
-        <span class="diff-btn-name">${diff.name}</span>
-        <span class="diff-btn-lv">${diff.level}</span>
-      `;
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'diff-btn-name';
+      nameSpan.textContent = diff.name;
+
+      const lvSpan = document.createElement('span');
+      lvSpan.className = 'diff-btn-lv';
+      lvSpan.textContent = diff.level;
+
+      btn.appendChild(nameSpan);
+      btn.appendChild(lvSpan);
       btn.addEventListener('click', () => {
         this.callbacks.onSelectDifficulty?.(diff.slot);
       });

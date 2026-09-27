@@ -21,17 +21,29 @@ export class NoteRenderer {
 
     ctx.save();
 
+    // 性能优化：通过二分查找计算当前活动时间窗口内的候选音符切片，避免全谱面数千音符全量循环
+    const minTime = sync.currentTime - 8.0;
+    const maxTime = sync.currentTime + Math.max(2.5, sync.approachTime * 2.0);
+    const startIdx = this.findActiveStartIndex(notes, minTime);
+
+    const activeNotes: NoteEvent[] = [];
+    for (let i = startIdx; i < notes.length; i++) {
+      const note = notes[i];
+      if (note.time > maxTime) break;
+      activeNotes.push(note);
+    }
+
     // 1. 优先绘制 SLIDE 官方标志性内屏滑条（宽幅发光导轨 + 动态大箭头流光阵列）
-    this.renderSlideGuides(ctx, notes, sync, center, judgeRadius, maxRadius, theme);
+    this.renderSlideGuides(ctx, activeNotes, sync, center, judgeRadius, maxRadius, theme);
 
     // 2. 绘制同拍金色双押连线 (EACH Connectors)
-    this.renderEachConnectors(ctx, notes, sync, center, judgeRadius, theme);
+    this.renderEachConnectors(ctx, activeNotes, sync, center, judgeRadius, theme);
 
     // 3. 绘制 HOLD 音符斜纹警示胶囊长条轨迹 (Striped Hold Ribbons)
-    this.renderHoldRibbons(ctx, notes, sync, center, innerRadius, judgeRadius, noteRadius, theme);
+    this.renderHoldRibbons(ctx, activeNotes, sync, center, innerRadius, judgeRadius, noteRadius, theme);
 
     // 4. 绘制各类飞行中的主体音符 (TAP, BREAK, SLIDE 星星, TOUCH)
-    for (const note of notes) {
+    for (const note of activeNotes) {
       const totalDur = note.duration || (note.slides ? Math.max(...note.slides.map(s => s.delay + s.duration)) : 0);
       if (!sync.isNoteVisible(note.time, totalDur)) continue;
 
@@ -47,6 +59,26 @@ export class NoteRenderer {
     }
 
     ctx.restore();
+  }
+
+  /**
+   * 二分查找起始活动音符索引
+   */
+  private static findActiveStartIndex(notes: NoteEvent[], minTime: number): number {
+    let low = 0;
+    let high = notes.length - 1;
+    let result = 0;
+
+    while (low <= high) {
+      const mid = (low + high) >> 1;
+      if (notes[mid].time >= minTime) {
+        result = mid;
+        high = mid - 1;
+      } else {
+        low = mid + 1;
+      }
+    }
+    return result;
   }
 
   /**
