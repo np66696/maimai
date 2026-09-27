@@ -190,18 +190,27 @@ export class ControlConsole {
         <div class="flank-card">
           <div class="flank-card-title">⚡ 街机流速与声音延迟</div>
           
-          <div class="flank-row">
-            <label class="flank-label">Hi-Speed 流速:</label>
-            <input type="range" class="console-slider flex-1" id="hispeed-slider" min="1.0" max="12.0" step="0.25" value="${sync.hiSpeed}" />
-            <span class="flank-badge" id="hispeed-val">${sync.hiSpeed.toFixed(2)}</span>
+          <div class="flank-slider-group">
+            <div class="slider-header-row">
+              <label class="flank-label">Hi-Speed 流速</label>
+              <span class="flank-badge" id="hispeed-val">${sync.hiSpeed.toFixed(2)}</span>
+            </div>
+            <div class="slider-control-row">
+              <button class="slider-step-btn" id="hispeed-sub" title="减少流速">-0.25</button>
+              <input type="range" class="console-slider flex-1" id="hispeed-slider" min="1.0" max="12.0" step="0.25" value="${sync.hiSpeed}" />
+              <button class="slider-step-btn" id="hispeed-add" title="增加流速">+0.25</button>
+            </div>
           </div>
 
-          <div class="flank-row offset-row">
-            <label class="flank-label">音频延迟 Offset:</label>
+          <div class="flank-slider-group offset-group">
+            <div class="slider-header-row">
+              <label class="flank-label">音频延迟 Offset</label>
+              <span class="flank-badge offset-badge" id="offset-val">+0 ms</span>
+            </div>
             <div class="offset-btn-group">
               <button class="offset-btn" id="offset-sub10">-10</button>
               <button class="offset-btn" id="offset-sub1">-1</button>
-              <span class="flank-badge offset-badge" id="offset-val">+0 ms</span>
+              <button class="offset-btn offset-reset-btn" id="offset-reset" title="复位归零">0ms</button>
               <button class="offset-btn" id="offset-add1">+1</button>
               <button class="offset-btn" id="offset-add10">+10</button>
             </div>
@@ -212,22 +221,34 @@ export class ControlConsole {
         <div class="flank-card">
           <div class="flank-card-title">🔊 音量控制</div>
           
-          <div class="flank-row">
-            <div class="flank-label-with-icon">
-              <button class="flank-icon-btn" id="btn-mute-music" title="静音/恢复音乐">🎵</button>
-              <span class="flank-label">音乐音量:</span>
+          <div class="flank-slider-group">
+            <div class="slider-header-row">
+              <div class="flank-label-with-icon">
+                <button class="flank-icon-btn" id="btn-mute-music" title="静音/恢复音乐">🎵</button>
+                <span class="flank-label">音乐音量</span>
+              </div>
+              <span class="flank-badge volume-badge" id="music-volume-val">${Math.round(audio.volume * 100)}%</span>
             </div>
-            <input type="range" class="console-slider flex-1" id="music-volume-slider" min="0" max="100" step="1" value="${Math.round(audio.volume * 100)}" />
-            <span class="flank-badge volume-badge" id="music-volume-val">${Math.round(audio.volume * 100)}%</span>
+            <div class="slider-control-row">
+              <button class="slider-step-btn" id="music-vol-sub" title="减少5%音量">-5%</button>
+              <input type="range" class="console-slider flex-1" id="music-volume-slider" min="0" max="100" step="1" value="${Math.round(audio.volume * 100)}" />
+              <button class="slider-step-btn" id="music-vol-add" title="增加5%音量">+5%</button>
+            </div>
           </div>
 
-          <div class="flank-row">
-            <div class="flank-label-with-icon">
-              <button class="flank-icon-btn" id="btn-mute-sfx" title="静音/恢复打击音效">🥁</button>
-              <span class="flank-label">打击音效:</span>
+          <div class="flank-slider-group">
+            <div class="slider-header-row">
+              <div class="flank-label-with-icon">
+                <button class="flank-icon-btn" id="btn-mute-sfx" title="静音/恢复打击音效">🥁</button>
+                <span class="flank-label">打击音效</span>
+              </div>
+              <span class="flank-badge volume-badge sfx-badge" id="sfx-volume-val">${Math.round(audio.sfxVolume * 100)}%</span>
             </div>
-            <input type="range" class="console-slider flex-1 sfx-slider" id="sfx-volume-slider" min="0" max="100" step="1" value="${Math.round(audio.sfxVolume * 100)}" />
-            <span class="flank-badge volume-badge sfx-badge" id="sfx-volume-val">${Math.round(audio.sfxVolume * 100)}%</span>
+            <div class="slider-control-row">
+              <button class="slider-step-btn" id="sfx-vol-sub" title="减少5%音量">-5%</button>
+              <input type="range" class="console-slider flex-1 sfx-slider" id="sfx-volume-slider" min="0" max="100" step="1" value="${Math.round(audio.sfxVolume * 100)}" />
+              <button class="slider-step-btn" id="sfx-vol-add" title="增加5%音量">+5%</button>
+            </div>
           </div>
         </div>
 
@@ -318,6 +339,17 @@ export class ControlConsole {
       this.callbacks.onHiSpeedChange(speed);
     });
 
+    // 流速微调步进按钮 [-0.25] / [+0.25]
+    const updateHiSpeed = (delta: number) => {
+      const nextSpeed = Math.round(Math.max(1.0, Math.min(12.0, sync.hiSpeed + delta)) * 100) / 100;
+      this.hiSpeedInput.value = nextSpeed.toString();
+      this.hiSpeedValEl.textContent = nextSpeed.toFixed(2);
+      sync.setHiSpeed(nextSpeed);
+      this.callbacks.onHiSpeedChange(nextSpeed);
+    };
+    this.rightContainer.querySelector('#hispeed-sub')?.addEventListener('click', () => updateHiSpeed(-0.25));
+    this.rightContainer.querySelector('#hispeed-add')?.addEventListener('click', () => updateHiSpeed(0.25));
+
     // 延迟微调
     const updateOffset = (delta: number) => {
       const current = Math.max(-500, Math.min(500, sync.offsetMs + delta));
@@ -329,6 +361,11 @@ export class ControlConsole {
 
     this.rightContainer.querySelector('#offset-sub10')?.addEventListener('click', () => updateOffset(-10));
     this.rightContainer.querySelector('#offset-sub1')?.addEventListener('click', () => updateOffset(-1));
+    this.rightContainer.querySelector('#offset-reset')?.addEventListener('click', () => {
+      sync.setOffset(0);
+      this.offsetValEl.textContent = '+0 ms';
+      this.callbacks.onOffsetChange(0);
+    });
     this.rightContainer.querySelector('#offset-add1')?.addEventListener('click', () => updateOffset(1));
     this.rightContainer.querySelector('#offset-add10')?.addEventListener('click', () => updateOffset(10));
 
@@ -434,6 +471,18 @@ export class ControlConsole {
       this.callbacks.onVolumeChange?.(vol);
     });
 
+    // 音乐音量步进按钮 [-5%] / [+5%]
+    const stepMusicVolume = (deltaPercent: number) => {
+      const currentVol = audio.volume;
+      const nextVol = Math.max(0, Math.min(1, Math.round((currentVol + deltaPercent / 100) * 100) / 100));
+      if (nextVol > 0.01) {
+        this.prevMusicVol = nextVol;
+      }
+      this.setMusicVolume(nextVol, audio);
+    };
+    this.rightContainer.querySelector('#music-vol-sub')?.addEventListener('click', () => stepMusicVolume(-5));
+    this.rightContainer.querySelector('#music-vol-add')?.addEventListener('click', () => stepMusicVolume(5));
+
     // 打击音效音量滑条 (支持全端触摸拖拽与试听)
     this.enableTouchDragSlider(
       this.sfxVolumeSlider,
@@ -452,6 +501,21 @@ export class ControlConsole {
         }
       }
     );
+
+    // 打击音效音量步进按钮 [-5%] / [+5%]
+    const stepSfxVolume = (deltaPercent: number) => {
+      const currentVol = audio.sfxVolume;
+      const nextVol = Math.max(0, Math.min(1, Math.round((currentVol + deltaPercent / 100) * 100) / 100));
+      if (nextVol > 0.01) {
+        this.prevSfxVol = nextVol;
+      }
+      this.setSfxVolume(nextVol, audio);
+      if (nextVol > 0.01) {
+        audio.triggerSfx('TAP');
+      }
+    };
+    this.rightContainer.querySelector('#sfx-vol-sub')?.addEventListener('click', () => stepSfxVolume(-5));
+    this.rightContainer.querySelector('#sfx-vol-add')?.addEventListener('click', () => stepSfxVolume(5));
 
     // 音乐静音切换
     this.muteMusicBtn.addEventListener('click', () => {
@@ -504,6 +568,7 @@ export class ControlConsole {
 
     slider.addEventListener('pointerdown', (e: PointerEvent) => {
       isTracking = true;
+      e.stopPropagation();
       try {
         slider.setPointerCapture(e.pointerId);
       } catch {}
@@ -512,12 +577,14 @@ export class ControlConsole {
 
     slider.addEventListener('pointermove', (e: PointerEvent) => {
       if (!isTracking) return;
+      e.stopPropagation();
       updateFromClientX(e.clientX);
     });
 
     const onPointerEnd = (e: PointerEvent) => {
       if (!isTracking) return;
       isTracking = false;
+      e.stopPropagation();
       try {
         slider.releasePointerCapture(e.pointerId);
       } catch {}
@@ -664,6 +731,18 @@ export class ControlConsole {
       audio.setSfxVolume(clamped);
     }
     this.callbacks.onSfxVolumeChange?.(clamped);
+  }
+
+  public setHiSpeed(speed: number): void {
+    const clamped = Math.max(1.0, Math.min(12.0, speed));
+    this.hiSpeedInput.value = clamped.toString();
+    this.hiSpeedValEl.textContent = clamped.toFixed(2);
+  }
+
+  public setOffset(offsetMs: number): void {
+    const clamped = Math.max(-500, Math.min(500, offsetMs));
+    const sign = clamped >= 0 ? '+' : '';
+    this.offsetValEl.textContent = `${sign}${clamped} ms`;
   }
 
   /**

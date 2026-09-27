@@ -172,6 +172,7 @@ class MaimaiApp {
       onHiSpeedAdjust: delta => {
         const next = Math.max(1.0, Math.min(12.0, this.sync.hiSpeed + delta));
         this.sync.setHiSpeed(next);
+        this.console.setHiSpeed(next);
       }
     });
 

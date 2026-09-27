@@ -576,16 +576,48 @@ body.platform-apk #flank-buttons-toggle-row {
 
 .progress-slider {
   width: 100%;
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.15);
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.18);
   accent-color: #00f0ff;
   cursor: pointer;
+  touch-action: pan-x !important;
+  padding: 8px 0;
   transition: height 0.1s ease;
 }
 
 .progress-slider:hover {
-  height: 10px;
+  height: 12px;
+}
+
+.progress-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #00f0ff;
+  cursor: pointer;
+  touch-action: pan-x !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.85);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.progress-slider::-webkit-slider-thumb:hover,
+.progress-slider::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 1);
+}
+
+.progress-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #00f0ff;
+  cursor: pointer;
+  border: none;
+  touch-action: pan-x !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.85);
 }
 
 .progress-time-row {
@@ -611,6 +643,82 @@ body.platform-apk #flank-buttons-toggle-row {
   color: #a0a8c0;
 }
 
+/* ================= 模块化滑条与步进调节组 ================= */
+.flank-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 0;
+}
+
+.slider-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.slider-control-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.slider-step-btn {
+  background: var(--btn-bg);
+  border: 1px solid rgba(0, 240, 255, 0.35);
+  color: #00f0ff;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: monospace;
+  height: 32px;
+  min-width: 44px;
+  padding: 0 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  touch-action: manipulation;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.slider-step-btn:hover {
+  background: rgba(0, 240, 255, 0.25);
+  border-color: #00f0ff;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.45);
+}
+
+.slider-step-btn:active {
+  transform: scale(0.92);
+  background: #00f0ff;
+  color: #000;
+}
+
+/* SFX 组金色微调步进按钮 */
+.flank-slider-group:has(.sfx-slider) .slider-step-btn,
+.flank-slider-group:has(#sfx-volume-slider) .slider-step-btn {
+  border-color: rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+}
+
+.flank-slider-group:has(.sfx-slider) .slider-step-btn:hover,
+.flank-slider-group:has(#sfx-volume-slider) .slider-step-btn:hover {
+  background: rgba(255, 215, 0, 0.25);
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.45);
+}
+
+.flank-slider-group:has(.sfx-slider) .slider-step-btn:active,
+.flank-slider-group:has(#sfx-volume-slider) .slider-step-btn:active {
+  background: #ffd700;
+  color: #000;
+}
+
 /* Offset 调节按钮微组 */
 .offset-btn-group {
   display: flex;
@@ -624,13 +732,16 @@ body.platform-apk #flank-buttons-toggle-row {
   background: var(--btn-bg);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: #fff;
-  padding: 3px 6px;
+  padding: 4px 6px;
   border-radius: 6px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: bold;
   cursor: pointer;
   flex: 1;
   text-align: center;
+  transition: all 0.15s ease;
+  user-select: none;
+  touch-action: manipulation;
 }
 
 .offset-btn:hover {
@@ -638,18 +749,35 @@ body.platform-apk #flank-buttons-toggle-row {
   color: #000;
 }
 
+.offset-btn:active {
+  transform: scale(0.94);
+}
+
+.offset-reset-btn {
+  background: rgba(255, 215, 0, 0.15) !important;
+  color: #ffd700 !important;
+  border-color: rgba(255, 215, 0, 0.4) !important;
+  font-weight: 800;
+}
+
+.offset-reset-btn:hover {
+  background: #ffd700 !important;
+  color: #000 !important;
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+}
+
 /* ================= 音量调节与通用控制滑条 ================= */
 .console-slider {
   width: 100%;
-  height: 8px;
-  border-radius: 4px;
+  height: 10px;
+  border-radius: 5px;
   background: rgba(255, 255, 255, 0.18);
   accent-color: #00f0ff;
   cursor: pointer;
   outline: none;
   touch-action: pan-x !important;
   pointer-events: auto !important;
-  padding: 6px 0;
+  padding: 10px 0;
   margin: 2px 0;
   transition: all 0.15s ease;
 }
@@ -662,38 +790,38 @@ body.platform-apk #flank-buttons-toggle-row {
 .console-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #00f0ff;
   cursor: pointer;
   touch-action: pan-x !important;
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.85);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.9);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .console-slider::-webkit-slider-thumb:hover,
 .console-slider::-webkit-slider-thumb:active {
-  transform: scale(1.2);
-  box-shadow: 0 0 16px rgba(0, 240, 255, 1);
+  transform: scale(1.15);
+  box-shadow: 0 0 18px rgba(0, 240, 255, 1);
 }
 
 .console-slider::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #00f0ff;
   cursor: pointer;
   border: none;
   touch-action: pan-x !important;
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.85);
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.9);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
 .console-slider::-moz-range-thumb:hover,
 .console-slider::-moz-range-thumb:active {
-  transform: scale(1.2);
-  box-shadow: 0 0 16px rgba(0, 240, 255, 1);
+  transform: scale(1.15);
+  box-shadow: 0 0 18px rgba(0, 240, 255, 1);
 }
 
 /* SFX 打击音效专用金黄高亮滑条 */
@@ -707,22 +835,22 @@ body.platform-apk #flank-buttons-toggle-row {
 
 .console-slider.sfx-slider::-webkit-slider-thumb {
   background: #ffd700;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.85);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
 }
 
 .console-slider.sfx-slider::-webkit-slider-thumb:hover,
 .console-slider.sfx-slider::-webkit-slider-thumb:active {
-  box-shadow: 0 0 16px rgba(255, 215, 0, 1);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 1);
 }
 
 .console-slider.sfx-slider::-moz-range-thumb {
   background: #ffd700;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.85);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.9);
 }
 
 .console-slider.sfx-slider::-moz-range-thumb:hover,
 .console-slider.sfx-slider::-moz-range-thumb:active {
-  box-shadow: 0 0 16px rgba(255, 215, 0, 1);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 1);
 }
 
 .flank-label-with-icon {
@@ -2260,7 +2388,7 @@ body.platform-apk #flank-buttons-toggle-row {
 
   .console-flank.flank-right {
     right: max(8px, env(safe-area-inset-right, 8px));
-    width: 230px;
+    width: min(320px, 48vw);
   }
 
   .flank-content {
@@ -2308,26 +2436,33 @@ body.platform-apk #flank-buttons-toggle-row {
   }
 
   .offset-btn {
-    padding: 2px 5px;
-    font-size: 10px;
+    padding: 4px 4px;
+    font-size: 11px;
+    height: 30px;
+  }
+
+  .slider-step-btn {
+    height: 34px;
+    min-width: 44px;
+    font-size: 11px;
   }
 
   .console-slider {
-    height: 8px;
-    padding: 8px 0;
+    height: 12px;
+    padding: 12px 0;
     touch-action: pan-x !important;
     pointer-events: auto !important;
   }
 
   .console-slider::-webkit-slider-thumb {
-    width: 26px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     touch-action: pan-x !important;
   }
 
   .console-slider::-moz-range-thumb {
-    width: 26px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     touch-action: pan-x !important;
   }
 
