@@ -1,5 +1,6 @@
 package com.maimaidx.viewer;
 
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -30,23 +31,40 @@ public class MainActivity extends BridgeActivity {
         }
     }
 
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        hideSystemBars();
+    }
+
     private void hideSystemBars() {
+        // 1. 刘海屏与异形屏 (Android 9 P+) 穿透延伸至屏幕物理边界
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             WindowManager.LayoutParams lp = getWindow().getAttributes();
             lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
             getWindow().setAttributes(lp);
         }
 
-        // 现代化 Android 11+ / Android 12-14 (骁龙 8+ Gen 1 深度适配)
+        // 2. 禁用 Android 10 Q+ 至 Android 15/16 的系统状态栏/导航栏自动反差深浅遮罩层 (Scrim)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            getWindow().setStatusBarContrastEnforced(false);
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
+
+        // 3. 强制系统栏背景完全透明，防止在 Android 16 强制 Edge-to-Edge 时残留黑边或白条
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+
+        // 4. Android 11+ / 15 / 16 (Baklava) 官方沉浸式全屏控制器
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        View decorView = getWindow().getDecorView();
+        WindowInsetsControllerCompat controller = WindowCompat.getInsetsController(getWindow(), decorView);
         if (controller != null) {
             controller.hide(WindowInsetsCompat.Type.systemBars());
             controller.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
         }
 
-        // 兼容 Android 10 及以下旧设备
-        View decorView = getWindow().getDecorView();
+        // 5. 兼容 Android 旧版本
         decorView.setSystemUiVisibility(
             View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -55,5 +73,16 @@ public class MainActivity extends BridgeActivity {
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
             | View.SYSTEM_UI_FLAG_FULLSCREEN
         );
+
+        // 6. 异步延时确认：确保在 Capacitor WebView 完成布局挂载后稳态隐藏状态栏
+        decorView.postDelayed(() -> {
+            if (!isFinishing() && !isDestroyed()) {
+                WindowInsetsControllerCompat ctrl = WindowCompat.getInsetsController(getWindow(), decorView);
+                if (ctrl != null) {
+                    ctrl.hide(WindowInsetsCompat.Type.systemBars());
+                    ctrl.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                }
+            }
+        }, 300);
     }
 }
