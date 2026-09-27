@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 60" width="200" height="60">
+  <defs>
+    <linearGradient id="segaGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0060a8"/>
+      <stop offset="50%" stop-color="#004080"/>
+      <stop offset="100%" stop-color="#002855"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="196" height="56" rx="8" fill="url(#segaGrad)" stroke="#0080ff" stroke-width="2"/>
+  <rect x="6" y="6" width="188" height="48" rx="6" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>
+  <!-- SEGA 经典字体风格 -->
+  <text x="100" y="42" font-family="'Arial Black', sans-serif" font-size="34" font-weight="900" font-style="italic" fill="#ffffff" stroke="#003366" stroke-width="2" text-anchor="middle" letter-spacing="4">SEGA</text>
+</svg>

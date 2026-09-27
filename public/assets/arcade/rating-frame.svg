@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 54" width="220" height="54">
+  <defs>
+    <linearGradient id="rainbowBorder" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffd700"/>
+      <stop offset="25%" stop-color="#ff3366"/>
+      <stop offset="50%" stop-color="#a855f7"/>
+      <stop offset="75%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#ffd700"/>
+    </linearGradient>
+    <linearGradient id="plateInner" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="goldFont" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 虹彩外框 -->
+  <polygon points="12,2 208,2 218,27 208,52 12,52 2,27" fill="url(#rainbowBorder)" stroke="#ffffff" stroke-width="1"/>
+  <!-- 内衬黑金底板 -->
+  <polygon points="14,5 206,5 215,27 206,49 14,49 5,27" fill="url(#plateInner)"/>
+
+  <!-- 星星图标 -->
+  <polygon points="26,16 28,22 34,22 29,26 31,32 26,28 21,32 23,26 18,22 24,22" fill="#ffd700"/>
+  
+  <text x="38" y="24" font-family="'Arial Black', sans-serif" font-size="10" font-weight="900" fill="#a855f7" letter-spacing="1">RATING</text>
+  <text x="96" y="38" font-family="'Arial Black', 'Impact', sans-serif" font-size="28" font-weight="900" fill="url(#goldFont)" letter-spacing="1">15500</text>
+  <!-- 虹星角标 -->
+  <circle cx="196" cy="27" r="10" fill="url(#rainbowBorder)"/>
+  <polygon points="196,20 198,24 202,24 199,27 200,31 196,28 192,31 193,27 190,24 194,24" fill="#ffffff"/>
+</svg>

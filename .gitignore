@@ -1,0 +1,16 @@
+node_modules
+dist
+.vite
+release
+release-exe
+release-apk
+*.apk
+*.exe
+*.log
+android/.gradle
+android/build
+android/app/build
+android/capacitor-cordova-android-plugins/build
+android/local.properties
+.DS_Store
+Thumbs.db

@@ -1,0 +1,31 @@
+{
+  "name": "maimai-viewer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "electron": "electron .",
+    "build:exe": "npm run build && electron-packager . maimai-DX --platform=win32 --arch=x64 --out=release-exe --overwrite --prune=true --ignore=\"^(android|release-exe|release-apk|release|tests|\\.git)\" && node -e \"require('fs').cpSync('release-exe/maimai-DX-win32-x64', 'release/maimai-DX-win32-x64', { recursive: true })\"",
+    "build:apk": "npm run build && npx cap copy android && C:\\Users\\QSR\\.gradle\\wrapper\\dists\\gradle-9.1.0-bin\\9agqghryom9wkf8r80qlhnts3\\gradle-9.1.0\\bin\\gradle.bat -p android assembleDebug && node -e \"require('fs').copyFileSync('android/app/build/outputs/apk/debug/app-debug.apk', 'release/maimai-DX.apk')\"",
+    "build:all": "npm run build:exe && npm run build:apk"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@types/node": "^26.6.3",
+    "electron": "^44.4.5",
+    "electron-packager": "^17.1.2",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.5.2",
+    "fflate": "^0.8.3"
+  }
+}

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 120" width="480" height="120">
+  <defs>
+    <!-- 渐变定义 -->
+    <linearGradient id="dxTextGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff570"/>
+      <stop offset="25%" stop-color="#ff2a85"/>
+      <stop offset="50%" stop-color="#00f0ff"/>
+      <stop offset="75%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ffd700"/>
+    </linearGradient>
+    <linearGradient id="maiGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#fdf4ff"/>
+      <stop offset="70%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#db2777"/>
+    </linearGradient>
+    <linearGradient id="dxGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffd700"/>
+      <stop offset="50%" stop-color="#ff7b00"/>
+      <stop offset="100%" stop-color="#ff0055"/>
+    </linearGradient>
+    <linearGradient id="prismGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="25%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#c084fc"/>
+      <stop offset="75%" stop-color="#f472b6"/>
+      <stop offset="100%" stop-color="#facc15"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="superGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="blur2"/>
+      <feGaussianBlur stdDeviation="3" result="blur1"/>
+      <feMerge>
+        <feMergeNode in="blur2"/>
+        <feMergeNode in="blur1"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 背景流光装饰线 -->
+  <path d="M 10 95 L 470 95" stroke="url(#prismGrad)" stroke-width="3" stroke-linecap="round" filter="url(#neonGlow)"/>
+  <circle cx="240" cy="55" r="50" fill="none" stroke="rgba(0, 240, 255, 0.15)" stroke-width="30"/>
+
+  <!-- 环形星星装饰 -->
+  <polygon points="50,22 54,34 66,34 56,42 60,54 50,46 40,54 44,42 34,34 46,34" fill="#ffd700" filter="url(#neonGlow)"/>
+  <polygon points="435,26 438,36 448,36 440,42 443,52 435,46 427,52 430,42 422,36 432,36" fill="#00f0ff" filter="url(#neonGlow)"/>
+
+  <!-- maimai 主字体 (立体多重描边) -->
+  <g font-family="'Arial Black', 'Impact', sans-serif" font-weight="900" font-style="italic">
+    <!-- 阴影层 -->
+    <text x="56" y="80" font-size="64" fill="#0f172a" opacity="0.8" letter-spacing="-1">maimai</text>
+    <!-- 外描边层 -->
+    <text x="52" y="76" font-size="64" fill="none" stroke="#ffffff" stroke-width="12" stroke-linejoin="round" letter-spacing="-1">maimai</text>
+    <text x="52" y="76" font-size="64" fill="none" stroke="#ec4899" stroke-width="7" stroke-linejoin="round" letter-spacing="-1">maimai</text>
+    <!-- 主文字面 -->
+    <text x="52" y="76" font-size="64" fill="url(#maiGrad)" letter-spacing="-1">maimai</text>
+
+    <!-- DX 字母 (鲜明街机黄色/橙色渐变立体) -->
+    <text x="325" y="78" font-size="68" fill="#1e1b4b" opacity="0.8">DX</text>
+    <text x="320" y="74" font-size="68" fill="none" stroke="#ffffff" stroke-width="14" stroke-linejoin="round">DX</text>
+    <text x="320" y="74" font-size="68" fill="none" stroke="#b91c1c" stroke-width="8" stroke-linejoin="round">DX</text>
+    <text x="320" y="74" font-size="68" fill="url(#dxGrad)" filter="url(#neonGlow)">DX</text>
+  </g>
+
+  <!-- PRiSM 徽标气泡与胶囊 -->
+  <g transform="translate(160, 88)">
+    <rect x="0" y="0" width="160" height="24" rx="12" fill="#090d16" stroke="url(#prismGrad)" stroke-width="2"/>
+    <text x="80" y="17" font-family="'Arial Black', sans-serif" font-size="14" font-weight="900" fill="url(#prismGrad)" text-anchor="middle" letter-spacing="4" filter="url(#neonGlow)">PRiSM</text>
+  </g>
+
+  <!-- 闪光点缀 -->
+  <polygon points="318,22 321,28 327,31 321,34 318,40 315,34 309,31 315,28" fill="#ffffff" filter="url(#neonGlow)"/>
+  <polygon points="120,24 122,28 126,30 122,32 120,36 118,32 114,30 118,28" fill="#ffffff"/>
+</svg>

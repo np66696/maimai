@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60">
+  <defs>
+    <linearGradient id="perfGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fff59d"/>
+      <stop offset="50%" stop-color="#fbc02d"/>
+      <stop offset="100%" stop-color="#f57f17"/>
+    </linearGradient>
+    <filter id="perfGlow">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g transform="skewX(-14) translate(20, 0)">
+    <text x="120" y="46" font-family="'Arial Black', 'Impact', sans-serif" font-size="42" font-weight="900" fill="url(#perfGrad)" stroke="#451a03" stroke-width="6" stroke-linejoin="round" text-anchor="middle" letter-spacing="2">PERFECT</text>
+    <text x="120" y="46" font-family="'Arial Black', 'Impact', sans-serif" font-size="42" font-weight="900" fill="url(#perfGrad)" text-anchor="middle" letter-spacing="2" filter="url(#perfGlow)">PERFECT</text>
+  </g>
+</svg>

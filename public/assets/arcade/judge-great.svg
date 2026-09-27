@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <defs>
+    <linearGradient id="greatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f472b6"/>
+      <stop offset="50%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#be185d"/>
+    </linearGradient>
+    <filter id="greatGlow">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g transform="skewX(-14) translate(20, 0)">
+    <text x="100" y="46" font-family="'Arial Black', 'Impact', sans-serif" font-size="42" font-weight="900" fill="url(#greatGrad)" stroke="#500724" stroke-width="6" stroke-linejoin="round" text-anchor="middle" letter-spacing="2">GREAT</text>
+    <text x="100" y="46" font-family="'Arial Black', 'Impact', sans-serif" font-size="42" font-weight="900" fill="url(#greatGrad)" text-anchor="middle" letter-spacing="2" filter="url(#greatGlow)">GREAT</text>
+  </g>
+</svg>
