@@ -174,13 +174,13 @@ export class NoteRenderer {
     center: Point,
     judgeRadius: number,
     maxRadius: number,
-    theme: ThemeColors,
+    _theme: ThemeColors,
     isBreak: boolean,
     alpha: number,
     currentTime: number,
     stopLanes?: number[]
   ): void {
-    const steps = 60;
+    const steps = maxRadius < 250 ? 36 : 48;
     const points = RadialMath.getSlidePathPoints(
       shape,
       startLane,
@@ -195,11 +195,11 @@ export class NoteRenderer {
 
     ctx.save();
     ctx.globalAlpha = alpha;
+    ctx.shadowBlur = 0;
 
     // 滑条宽度（约 28px ~ 34px）
     const trackWidth = maxRadius * 0.082;
-    const mainColor = isBreak ? '#ff3b00' : theme.slideGuide;
-    const bedFill = isBreak ? 'rgba(255, 60, 0, 0.22)' : 'rgba(255, 230, 0, 0.22)';
+    const bedFill = isBreak ? 'rgba(255, 60, 0, 0.28)' : 'rgba(255, 230, 0, 0.28)';
     const railColor = isBreak ? '#ffe066' : '#ffffff';
 
     // 1. 确定当前未滑过的有效路径段
@@ -218,18 +218,16 @@ export class NoteRenderer {
       ctx.lineWidth = trackWidth;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.shadowColor = mainColor;
-      ctx.shadowBlur = 14;
+      ctx.shadowBlur = 0;
       ctx.stroke();
 
       // 1.2 绘制滑道外沿高光双轨 (Outer Neon Border Rails)
       ctx.strokeStyle = railColor;
-      ctx.lineWidth = 2.2;
-      ctx.shadowBlur = 8;
+      ctx.lineWidth = 2.0;
       ctx.stroke();
 
       // 1.3 绘制沿路径流动的大号 Chevron 官方箭头阵列
-      const arrowSpacing = maxRadius * 0.075; // 箭头间距 ~24px - 28px
+      const arrowSpacing = maxRadius * 0.08; // 箭头间距 ~24px - 28px
       let accumulatedDist = 0;
       let lastArrowDist = 0;
       let arrowIndex = 0;
@@ -265,18 +263,15 @@ export class NoteRenderer {
           ctx.lineTo(-arrowH * 0.45, arrowW * 0.5); // 下羽翼
           ctx.closePath();
 
+          ctx.shadowBlur = 0;
           if (isPulse) {
             ctx.fillStyle = '#ffffff';
-            ctx.shadowColor = '#ffffff';
-            ctx.shadowBlur = 14;
             ctx.fill();
             ctx.strokeStyle = isBreak ? '#ff2200' : '#ffd700';
             ctx.lineWidth = 2.2;
             ctx.stroke();
           } else {
             ctx.fillStyle = isBreak ? '#ff4400' : '#ffe600';
-            ctx.shadowColor = mainColor;
-            ctx.shadowBlur = 8;
             ctx.fill();
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 1.5;
@@ -297,8 +292,7 @@ export class NoteRenderer {
     ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
     ctx.strokeStyle = isBreak ? '#ff5500' : '#ffee00';
     ctx.lineWidth = 2.5;
-    ctx.shadowColor = isBreak ? '#ff5500' : '#ffee00';
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 0;
     ctx.stroke();
 
     ctx.beginPath();
@@ -334,8 +328,7 @@ export class NoteRenderer {
     ctx.save();
     ctx.strokeStyle = theme.eachGold;
     ctx.lineWidth = 4.5;
-    ctx.shadowColor = theme.eachGold;
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 0;
 
     for (const group of eachGroups.values()) {
       if (group.length < 2) continue;
@@ -405,8 +398,7 @@ export class NoteRenderer {
         ? ctx.roundRect(rTail, -ribbonWidth / 2, rHead - rTail, ribbonWidth, ribbonWidth / 2)
         : ctx.rect(rTail, -ribbonWidth / 2, rHead - rTail, ribbonWidth);
       ctx.fillStyle = color;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 0;
       ctx.fill();
 
       // 绘制斜纹动态条纹 (Caution / Hazard Stripes)
@@ -469,8 +461,7 @@ export class NoteRenderer {
     ctx.beginPath();
     ctx.arc(0, 0, noteRadius, 0, Math.PI * 2);
     ctx.fillStyle = baseColor;
-    ctx.shadowColor = baseColor;
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 0;
     ctx.fill();
 
     // 2. 细白内衬环 (White Concentric Inner Ring)
@@ -553,8 +544,7 @@ export class NoteRenderer {
     grad.addColorStop(1, theme.breakColor);
 
     ctx.fillStyle = grad;
-    ctx.shadowColor = theme.breakColor;
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 0;
     ctx.fill();
 
     ctx.strokeStyle = '#ffffff';
@@ -565,8 +555,7 @@ export class NoteRenderer {
     ctx.beginPath();
     ctx.arc(0, 0, noteRadius * 0.40, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = '#ffff00';
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 0;
     ctx.fill();
 
     ctx.restore();
@@ -583,7 +572,7 @@ export class NoteRenderer {
     innerRadius: number,
     judgeRadius: number,
     noteRadius: number,
-    theme: ThemeColors
+    _theme: ThemeColors
   ): void {
     if (!note.slides || note.slides.length === 0) return;
 
@@ -665,8 +654,7 @@ export class NoteRenderer {
       ctx.closePath();
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2.2;
-      ctx.shadowColor = isBreak ? '#ff4400' : theme.slideStar;
-      ctx.shadowBlur = 14;
+      ctx.shadowBlur = 0;
       ctx.stroke();
 
       // 星星中心宝石核心 (Center Gem Bead)
@@ -709,8 +697,7 @@ export class NoteRenderer {
     ];
 
     ctx.fillStyle = theme.touchRing;
-    ctx.shadowColor = theme.touchRing;
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 0;
 
     for (const dir of directions) {
       ctx.save();

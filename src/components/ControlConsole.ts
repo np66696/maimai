@@ -68,6 +68,7 @@ export class ControlConsole {
   private isDraggingProgress: boolean = false;
   private dragPreviewTime: number = 0;
   private currentDuration: number = 0;
+  private lastTimeStr: string = '';
 
   private isAutoPlay: boolean = true;
   private showSensors: boolean = true;
@@ -293,40 +294,25 @@ export class ControlConsole {
       this.callbacks.onSeek(Math.min(this.currentDuration, audio.currentTime + 2.0));
     });
 
-    // 进度条拖拽防抖与平滑 Seek
-    const onStartDrag = () => {
-      this.isDraggingProgress = true;
-    };
+    // 进度条全端触摸与指针拖拽支持 (平滑防抖 Seek)
+    this.enableTouchDragSlider(
+      this.progressBar,
+      ratio1000 => {
+        this.isDraggingProgress = true;
+        const ratio = ratio1000 / 1000;
+        this.dragPreviewTime = ratio * this.currentDuration;
+        this.renderTimeText(this.dragPreviewTime, this.currentDuration);
+      },
+      ratio1000 => {
+        this.isDraggingProgress = false;
+        const ratio = ratio1000 / 1000;
+        const targetTime = ratio * this.currentDuration;
+        this.callbacks.onSeek(targetTime);
+      }
+    );
 
-    const onMoveDrag = () => {
-      if (!this.isDraggingProgress) return;
-      const ratio = parseFloat(this.progressBar.value) / 1000;
-      this.dragPreviewTime = ratio * this.currentDuration;
-      this.renderTimeText(this.dragPreviewTime, this.currentDuration);
-    };
-
-    const onEndDrag = () => {
-      if (!this.isDraggingProgress) return;
-      this.isDraggingProgress = false;
-      const ratio = parseFloat(this.progressBar.value) / 1000;
-      const targetTime = ratio * this.currentDuration;
-      this.callbacks.onSeek(targetTime);
-    };
-
-    this.progressBar.addEventListener('mousedown', onStartDrag);
-    this.progressBar.addEventListener('touchstart', onStartDrag, { passive: true });
-    this.progressBar.addEventListener('input', onMoveDrag);
-    this.progressBar.addEventListener('change', onEndDrag);
-    window.addEventListener('mouseup', () => {
-      if (this.isDraggingProgress) onEndDrag();
-    });
-    window.addEventListener('touchend', () => {
-      if (this.isDraggingProgress) onEndDrag();
-    });
-
-    // 流速调节
-    this.hiSpeedInput.addEventListener('input', () => {
-      const speed = parseFloat(this.hiSpeedInput.value);
+    // 流速调节 (支持手机端直接滑拉与点击调节)
+    this.enableTouchDragSlider(this.hiSpeedInput, speed => {
       this.hiSpeedValEl.textContent = speed.toFixed(2);
       sync.setHiSpeed(speed);
       this.callbacks.onHiSpeedChange(speed);
@@ -437,9 +423,8 @@ export class ControlConsole {
     this.updateMusicVolumeUI(audio.volume);
     this.updateSfxVolumeUI(audio.sfxVolume);
 
-    // 音乐音量滑条
-    this.musicVolumeSlider.addEventListener('input', () => {
-      const val = parseInt(this.musicVolumeSlider.value, 10);
+    // 音乐音量滑条 (支持全端触摸拖拽)
+    this.enableTouchDragSlider(this.musicVolumeSlider, val => {
       const vol = Math.max(0, Math.min(1, val / 100));
       if (vol > 0.01) {
         this.prevMusicVol = vol;
@@ -449,24 +434,24 @@ export class ControlConsole {
       this.callbacks.onVolumeChange?.(vol);
     });
 
-    // 打击音效音量滑条
-    this.sfxVolumeSlider.addEventListener('input', () => {
-      const val = parseInt(this.sfxVolumeSlider.value, 10);
-      const vol = Math.max(0, Math.min(1, val / 100));
-      if (vol > 0.01) {
-        this.prevSfxVol = vol;
+    // 打击音效音量滑条 (支持全端触摸拖拽与试听)
+    this.enableTouchDragSlider(
+      this.sfxVolumeSlider,
+      val => {
+        const vol = Math.max(0, Math.min(1, val / 100));
+        if (vol > 0.01) {
+          this.prevSfxVol = vol;
+        }
+        this.updateSfxVolumeUI(vol);
+        audio.setSfxVolume(vol);
+        this.callbacks.onSfxVolumeChange?.(vol);
+      },
+      () => {
+        if (audio.sfxVolume > 0.01) {
+          audio.triggerSfx('TAP');
+        }
       }
-      this.updateSfxVolumeUI(vol);
-      audio.setSfxVolume(vol);
-      this.callbacks.onSfxVolumeChange?.(vol);
-    });
-
-    // 释放音效滑条时播放一次 TAP 试听音效
-    this.sfxVolumeSlider.addEventListener('change', () => {
-      if (audio.sfxVolume > 0.01) {
-        audio.triggerSfx('TAP');
-      }
-    });
+    );
 
     // 音乐静音切换
     this.muteMusicBtn.addEventListener('click', () => {
@@ -492,6 +477,72 @@ export class ControlConsole {
     });
   }
 
+  /**
+   * 为滑条绑定全功能多端触摸与指针拖拽支持 (支持手机触摸滑动、指针捕获、滑块滑动与点击定位)
+   */
+  private enableTouchDragSlider(
+    slider: HTMLInputElement,
+    onValue: (value: number) => void,
+    onCommit?: (value: number) => void
+  ): void {
+    let isTracking = false;
+
+    const updateFromClientX = (clientX: number) => {
+      const rect = slider.getBoundingClientRect();
+      if (rect.width <= 0) return;
+      const min = parseFloat(slider.min || '0');
+      const max = parseFloat(slider.max || '100');
+      const step = parseFloat(slider.step || '1') || 1;
+      const fraction = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      let rawVal = min + fraction * (max - min);
+      rawVal = Math.round((rawVal - min) / step) * step + min;
+      const decimals = (slider.step || '').split('.')[1]?.length || 0;
+      const rounded = parseFloat(rawVal.toFixed(decimals));
+      slider.value = rounded.toString();
+      onValue(rounded);
+    };
+
+    slider.addEventListener('pointerdown', (e: PointerEvent) => {
+      isTracking = true;
+      try {
+        slider.setPointerCapture(e.pointerId);
+      } catch {}
+      updateFromClientX(e.clientX);
+    });
+
+    slider.addEventListener('pointermove', (e: PointerEvent) => {
+      if (!isTracking) return;
+      updateFromClientX(e.clientX);
+    });
+
+    const onPointerEnd = (e: PointerEvent) => {
+      if (!isTracking) return;
+      isTracking = false;
+      try {
+        slider.releasePointerCapture(e.pointerId);
+      } catch {}
+      const val = parseFloat(slider.value);
+      if (onCommit) {
+        onCommit(val);
+      } else {
+        onValue(val);
+      }
+    };
+
+    slider.addEventListener('pointerup', onPointerEnd);
+    slider.addEventListener('pointercancel', onPointerEnd);
+
+    // 保留标准 input / change 监听兼容键盘调节或自动化测试
+    slider.addEventListener('input', () => {
+      onValue(parseFloat(slider.value));
+    });
+    if (onCommit) {
+      slider.addEventListener('change', () => {
+        onCommit(parseFloat(slider.value));
+      });
+    }
+  }
+
   private renderTimeText(current: number, total: number): void {
     const fmt = (t: number) => {
       const clamped = Math.max(0, t);
@@ -499,7 +550,11 @@ export class ControlConsole {
       const s = Math.floor(clamped % 60).toString().padStart(2, '0');
       return `${m}:${s}`;
     };
-    this.timeDisplay.textContent = `${fmt(current)} / ${fmt(total)}`;
+    const str = `${fmt(current)} / ${fmt(total)}`;
+    if (str !== this.lastTimeStr) {
+      this.timeDisplay.textContent = str;
+      this.lastTimeStr = str;
+    }
   }
 
   /**

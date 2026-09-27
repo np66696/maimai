@@ -76,16 +76,36 @@ canvas#main-canvas {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 240, 255, 0.2);
   min-width: 380px;
   max-width: 90vw;
+  pointer-events: none;
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease,
               left 0.45s cubic-bezier(0.16, 1, 0.3, 1),
               max-width 0.45s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.3s ease;
 }
 
-/* 非 auto 模式（试玩/手动打歌模式）顶栏平滑滑移至左侧空白处 */
+.hud-top-bar * {
+  pointer-events: none;
+}
+
+.hud-top-bar button,
+.hud-top-bar .hud-pause-btn {
+  pointer-events: auto !important;
+}
+
+/* 试玩模式（非 auto 模式）打歌时自动向上平滑滑动隐藏，暂停或单曲结束时再滑出恢复 */
+.hud-top-bar.gameplay-hidden,
+.arcade-hud.gameplay-hidden .hud-top-bar {
+  transform: translateY(-140%) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 非 auto 模式（试玩/手动打歌模式）顶栏平滑滑移至左侧空白处，彻底避免遮挡顶部 8 号与 1 号按键 */
 .hud-top-bar.dock-left,
-.arcade-hud.manual-mode .hud-top-bar {
-  left: calc(18px + env(safe-area-inset-left, 0px));
+.arcade-hud.manual-mode .hud-top-bar,
+body.platform-apk .hud-top-bar {
+  left: max(18px, env(safe-area-inset-left, 18px));
   transform: translateX(0);
   min-width: 0;
   max-width: min(380px, calc(50vw - 20px));
@@ -621,51 +641,59 @@ body.platform-apk #flank-buttons-toggle-row {
 /* ================= 音量调节与通用控制滑条 ================= */
 .console-slider {
   width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.15);
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
   accent-color: #00f0ff;
   cursor: pointer;
   outline: none;
+  touch-action: pan-x !important;
+  pointer-events: auto !important;
+  padding: 6px 0;
+  margin: 2px 0;
   transition: all 0.15s ease;
 }
 
 .console-slider:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.28);
   box-shadow: 0 0 8px rgba(0, 240, 255, 0.3);
 }
 
 .console-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #00f0ff;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+  touch-action: pan-x !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.85);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-.console-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.25);
-  box-shadow: 0 0 14px rgba(0, 240, 255, 1);
+.console-slider::-webkit-slider-thumb:hover,
+.console-slider::-webkit-slider-thumb:active {
+  transform: scale(1.2);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 1);
 }
 
 .console-slider::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #00f0ff;
   cursor: pointer;
   border: none;
-  box-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+  touch-action: pan-x !important;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.85);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-.console-slider::-moz-range-thumb:hover {
-  transform: scale(1.25);
-  box-shadow: 0 0 14px rgba(0, 240, 255, 1);
+.console-slider::-moz-range-thumb:hover,
+.console-slider::-moz-range-thumb:active {
+  transform: scale(1.2);
+  box-shadow: 0 0 16px rgba(0, 240, 255, 1);
 }
 
 /* SFX 打击音效专用金黄高亮滑条 */
@@ -682,8 +710,9 @@ body.platform-apk #flank-buttons-toggle-row {
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.85);
 }
 
-.console-slider.sfx-slider::-webkit-slider-thumb:hover {
-  box-shadow: 0 0 15px rgba(255, 215, 0, 1);
+.console-slider.sfx-slider::-webkit-slider-thumb:hover,
+.console-slider.sfx-slider::-webkit-slider-thumb:active {
+  box-shadow: 0 0 16px rgba(255, 215, 0, 1);
 }
 
 .console-slider.sfx-slider::-moz-range-thumb {
@@ -691,8 +720,9 @@ body.platform-apk #flank-buttons-toggle-row {
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.85);
 }
 
-.console-slider.sfx-slider::-moz-range-thumb:hover {
-  box-shadow: 0 0 15px rgba(255, 215, 0, 1);
+.console-slider.sfx-slider::-moz-range-thumb:hover,
+.console-slider.sfx-slider::-moz-range-thumb:active {
+  box-shadow: 0 0 16px rgba(255, 215, 0, 1);
 }
 
 .flank-label-with-icon {
@@ -2158,20 +2188,24 @@ body.platform-apk #flank-buttons-toggle-row {
 
 /* ================= 移动端 / 异形屏 (Notch / Cutout) 深度适配 ================= */
 @media (max-height: 550px), (max-width: 900px) {
-  /* 顶部 HUD 紧凑化 */
+  /* 顶部 HUD 紧凑化并靠左侧边距锚定，彻底避免遮挡正上方 8 号与 1 号点击区 */
   .hud-top-bar {
     top: max(6px, env(safe-area-inset-top, 6px));
+    left: max(12px, env(safe-area-inset-left, 12px));
+    transform: none;
     padding: 4px 12px;
     gap: 8px;
     min-width: 0;
-    max-width: min(340px, 78vw);
+    max-width: min(320px, 42vw);
     border-radius: 24px;
+    pointer-events: none;
   }
 
   .hud-top-bar.dock-left,
   .arcade-hud.manual-mode .hud-top-bar {
-    left: max(10px, env(safe-area-inset-left, 10px));
-    max-width: min(300px, 42vw);
+    left: max(12px, env(safe-area-inset-left, 12px));
+    transform: none;
+    max-width: min(320px, 42vw);
   }
 
   .hud-jacket-wrap {
@@ -2279,12 +2313,22 @@ body.platform-apk #flank-buttons-toggle-row {
   }
 
   .console-slider {
-    height: 4px;
+    height: 8px;
+    padding: 8px 0;
+    touch-action: pan-x !important;
+    pointer-events: auto !important;
   }
 
   .console-slider::-webkit-slider-thumb {
-    width: 14px;
-    height: 14px;
+    width: 26px;
+    height: 26px;
+    touch-action: pan-x !important;
+  }
+
+  .console-slider::-moz-range-thumb {
+    width: 26px;
+    height: 26px;
+    touch-action: pan-x !important;
   }
 
   .flank-handle {

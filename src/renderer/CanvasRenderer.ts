@@ -132,9 +132,9 @@ export class CanvasRenderer {
     // 1. 同步时间轴
     this.sync.update(this.audio.currentTime);
 
-    // 2. 判定系统更新
+    // 2. 判定系统更新 (传入当前激活按键集合，支持 HOLD 持续判定与 SLIDE 终点判定)
     if (this.chart) {
-      const results = this.judge.update(this.sync.currentTime, this.autoPlay);
+      const results = this.judge.update(this.sync.currentTime, this.autoPlay, this.activeLanes);
       for (const res of results) {
         // 播放打击音效
         this.audio.triggerSfx(res.type, res.isBreak);

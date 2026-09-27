@@ -126,6 +126,7 @@ class MaimaiApp {
       onAutoPlayToggle: enabled => {
         this.isAutoPlay = enabled;
         this.renderer.setAutoPlay(enabled);
+        this.hud.setAutoPlay(enabled);
         this.updateConsoleVisibility();
       },
       onSensorsToggle: enabled => this.renderer.setShowSensors(enabled),
@@ -186,12 +187,11 @@ class MaimaiApp {
   }
 
   private updateConsoleVisibility(): void {
-    // 在关闭 auto 模式 (试玩模式) 且正在播放打歌时，自动滑动隐藏浮窗；暂停或歌曲结束时自动滑出恢复
-    if (!this.isAutoPlay && this.audio.isPlaying) {
-      this.console.setGameplayHidden(true);
-    } else {
-      this.console.setGameplayHidden(false);
-    }
+    // 在关闭 auto 模式 (试玩打歌模式) 且正在播放时，自动平滑隐藏双翼控制台与顶部浮窗
+    // 暂停打歌或单曲结束时，自动平滑滑出复位，保证最纯净的打歌视野
+    const shouldHide = !this.isAutoPlay && this.audio.isPlaying;
+    this.console.setGameplayHidden(shouldHide);
+    this.hud.setGameplayHidden(shouldHide);
     // 同步顶栏状态：非 auto 模式时移至左侧空白区域
     this.hud.setAutoPlay(this.isAutoPlay);
   }

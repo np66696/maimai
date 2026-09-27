@@ -105,4 +105,34 @@ describe('JudgeEngine', () => {
     expect(engine.accuracyPercentage).toBeCloseTo(101.0, 1);
     expect(engine.rank).toBe('SSS+');
   });
+
+  it('should successfully judge HOLD tail and SLIDE finish in manual play when lane is held', () => {
+    const slideNotes: NoteEvent[] = [
+      {
+        id: 20,
+        time: 1.0,
+        type: 'SLIDE',
+        lane: 1,
+        isEach: false,
+        isBreak: false,
+        slides: [{ shape: '-', startLane: 1, endLane: 5, delay: 0.5, duration: 1.0 }]
+      }
+    ];
+
+    const engine = new JudgeEngine();
+    engine.loadChart(slideNotes);
+
+    // Manual tap on lane 1 at 1.0s
+    const headRes = engine.handleInput(1, 1.0);
+    expect(headRes?.grade).toBe('CRITICAL_PERFECT');
+    expect(engine.combo).toBe(1);
+
+    // Player slides to lane 5 and holds it as finish time arrives at 2.5s
+    const activeLanes = new Set<number>([5]);
+    const finishResults = engine.update(2.5, false, activeLanes);
+    expect(finishResults.length).toBe(1);
+    expect(finishResults[0].grade).toBe('CRITICAL_PERFECT');
+    expect(finishResults[0].lane).toBe(5);
+    expect(engine.combo).toBe(2);
+  });
 });

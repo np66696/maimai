@@ -219,9 +219,8 @@ export class EffectSystem {
       const imgH = 46;
 
       if (img && img.complete && img.naturalWidth > 0) {
-        // 使用官方高精度 SVG 横幅
-        ctx.shadowColor = b.grade === 'CRITICAL_PERFECT' ? '#ffd700' : (b.grade === 'PERFECT' ? '#ff2a85' : '#00f0ff');
-        ctx.shadowBlur = 12;
+        // 使用官方高精度 SVG 横幅 (移除 shadowBlur 以确保移动端 120Hz 零卡顿)
+        ctx.shadowBlur = 0;
         ctx.drawImage(img, -imgW / 2, -imgH / 2, imgW, imgH);
       } else {
         // 优雅后备矢量文字
@@ -229,6 +228,7 @@ export class EffectSystem {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = b.grade === 'CRITICAL_PERFECT' ? '#ffd700' : (b.grade === 'PERFECT' ? '#ff2a85' : '#00f0ff');
+        ctx.shadowBlur = 0;
         ctx.fillText(b.grade.replace('_', ' '), 0, 0);
       }
 
@@ -251,8 +251,7 @@ export class EffectSystem {
           ? ctx.roundRect(-pillW / 2, pillY, pillW, pillH, 9)
           : ctx.rect(-pillW / 2, pillY, pillW, pillH);
         ctx.fillStyle = 'rgba(10, 15, 28, 0.88)';
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = pillColor;
+        ctx.shadowBlur = 0;
         ctx.fill();
 
         ctx.strokeStyle = pillColor;

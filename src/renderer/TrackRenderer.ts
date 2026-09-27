@@ -160,12 +160,12 @@ export class TrackRenderer {
     ctx.stroke();
 
     // 6. 外圈主判定线 (Judgment Line)
+    // 采用双重抗锯齿纯矢量描边替代 shadowBlur，避免手机端高昂的 CPU 高斯模糊
+    ctx.shadowBlur = 0;
     ctx.beginPath();
     ctx.arc(center.x, center.y, judgeRadius, 0, Math.PI * 2);
     ctx.strokeStyle = theme.judgeRing;
     ctx.lineWidth = 3.5;
-    ctx.shadowColor = theme.judgeRing;
-    ctx.shadowBlur = 12;
     ctx.stroke();
 
     // 外圈判定线细内衬
@@ -173,7 +173,6 @@ export class TrackRenderer {
     ctx.arc(center.x, center.y, judgeRadius - 4, 0, Math.PI * 2);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
     ctx.lineWidth = 1;
-    ctx.shadowBlur = 0;
     ctx.stroke();
 
     // 7. 内屏环形歌曲播放进度条 (Circular Song Progress Ring)
@@ -184,8 +183,7 @@ export class TrackRenderer {
       ctx.arc(center.x, center.y, judgeRadius + 3, startAngle, endAngle);
       ctx.strokeStyle = '#00f0ff';
       ctx.lineWidth = 3.5;
-      ctx.shadowColor = '#00f0ff';
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 0;
       ctx.stroke();
     }
 

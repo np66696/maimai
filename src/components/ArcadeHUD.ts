@@ -12,6 +12,11 @@ export class ArcadeHUD {
   private pauseBtn: HTMLButtonElement;
   private onPauseToggle?: () => void;
 
+  private lastCombo: number = -1;
+  private lastAccuracyStr: string = '';
+  private lastRank: string = '';
+  private lastBpmStr: string = '';
+
   constructor(parent: HTMLElement, onPauseToggle?: () => void) {
     this.onPauseToggle = onPauseToggle;
     this.container = document.createElement('div');
@@ -79,6 +84,19 @@ export class ArcadeHUD {
     } else {
       this.topBarEl.classList.add('dock-left');
       this.container.classList.add('manual-mode');
+    }
+  }
+
+  /**
+   * 游玩打歌时顶栏浮窗平滑滑动隐藏/呼出
+   */
+  setGameplayHidden(hidden: boolean): void {
+    if (hidden) {
+      this.topBarEl.classList.add('gameplay-hidden');
+      this.container.classList.add('gameplay-hidden');
+    } else {
+      this.topBarEl.classList.remove('gameplay-hidden');
+      this.container.classList.remove('gameplay-hidden');
     }
   }
 
@@ -159,25 +177,38 @@ export class ArcadeHUD {
     _currentTime: number = 0,
     _totalDuration: number = 0
   ): void {
-    if (this.comboNumEl) {
+    // 仅在 Combo 产生数值变动时才更新 DOM 与脉冲动效，杜绝每帧强制 reflow 导致骁龙发烫卡顿
+    if (this.comboNumEl && judge.combo !== this.lastCombo) {
       this.comboNumEl.textContent = judge.combo.toString();
-      if (judge.combo > 0) {
+      if (judge.combo > 0 && judge.combo > this.lastCombo) {
         this.centerComboEl.classList.remove('pulse');
-        void this.centerComboEl.offsetWidth; // 触发 reflow
+        void this.centerComboEl.offsetWidth; // 仅在击中连击时触发脉冲
         this.centerComboEl.classList.add('pulse');
+      } else if (judge.combo === 0) {
+        this.centerComboEl.classList.remove('pulse');
       }
+      this.lastCombo = judge.combo;
     }
 
     if (this.dxScoreEl) {
-      this.dxScoreEl.textContent = `${judge.accuracyPercentage.toFixed(4)}%`;
+      const accStr = `${judge.accuracyPercentage.toFixed(4)}%`;
+      if (accStr !== this.lastAccuracyStr) {
+        this.dxScoreEl.textContent = accStr;
+        this.lastAccuracyStr = accStr;
+      }
     }
 
-    if (this.rankEl) {
+    if (this.rankEl && judge.rank !== this.lastRank) {
       this.rankEl.textContent = judge.rank;
+      this.lastRank = judge.rank;
     }
 
     if (currentBpm && this.bpmEl) {
-      this.bpmEl.textContent = Math.round(currentBpm).toString();
+      const bpmStr = Math.round(currentBpm).toString();
+      if (bpmStr !== this.lastBpmStr) {
+        this.bpmEl.textContent = bpmStr;
+        this.lastBpmStr = bpmStr;
+      }
     }
   }
 }

@@ -35,6 +35,7 @@ interface JudgeItem {
 
 export class JudgeEngine {
   private items: JudgeItem[] = [];
+  private activeStartIndex: number = 0;
 
   public combo: number = 0;
   public maxCombo: number = 0;
@@ -190,6 +191,7 @@ export class JudgeEngine {
   }
 
   reset(): void {
+    this.activeStartIndex = 0;
     for (const item of this.items) {
       item.judged = false;
     }
@@ -210,12 +212,19 @@ export class JudgeEngine {
   }
 
   /**
-   * 帧更新循环：处理 Auto-Play 打击或漏键 (MISS) 结算
+   * 帧更新循环：处理 Auto-Play 打击、HOLD长按/SLIDE滑条持续判定与漏键 (MISS) 结算
+   * 采用时间窗口索引裁剪算法，避免每帧轮询数千个音符，从根本上解决 CPU 负载与发热
    */
-  update(currentTime: number, autoPlay: boolean): JudgeResult[] {
+  update(currentTime: number, autoPlay: boolean, activeLanes?: Set<number>): JudgeResult[] {
     const results: JudgeResult[] = [];
 
-    for (const item of this.items) {
+    // 快速前进跳过已判定的历史音符
+    while (this.activeStartIndex < this.items.length && this.items[this.activeStartIndex].judged) {
+      this.activeStartIndex++;
+    }
+
+    for (let i = this.activeStartIndex; i < this.items.length; i++) {
+      const item = this.items[i];
       if (item.judged) continue;
 
       if (autoPlay) {
@@ -223,13 +232,30 @@ export class JudgeEngine {
         if (currentTime >= item.time) {
           const res = this.applyJudgment(item, 'CRITICAL_PERFECT', 0);
           results.push(res);
+        } else {
+          // 由于 items 严格按时间升序，后续所有音符的 item.time > currentTime，立即终止检索
+          break;
         }
       } else {
-        // 手动模式：超过判定窗口 (+150ms) 判定为 MISS
+        // 手动模式：
+        // 1. 处理长按 (HOLD) 持续判定与滑条 (SLIDE) 终点滑动完成判定
+        if (item.isSubJudgment && activeLanes && activeLanes.has(item.lane)) {
+          if (currentTime >= item.time - this.WINDOW_GD) {
+            const delta = (currentTime - item.time) * 1000;
+            const res = this.applyJudgment(item, 'CRITICAL_PERFECT', delta);
+            results.push(res);
+            continue;
+          }
+        }
+
+        // 2. 超出判定窗口 (+150ms) 判定为 MISS
         if (currentTime > item.time + this.WINDOW_GD) {
           const delta = (currentTime - item.time) * 1000;
           const res = this.applyJudgment(item, 'MISS', delta);
           results.push(res);
+        } else if (item.time > currentTime + this.WINDOW_GD) {
+          // 当前音符还未到达判定窗口，后续音符时间更晚，直接终止检索
+          break;
         }
       }
     }
@@ -244,8 +270,12 @@ export class JudgeEngine {
     let candidate: JudgeItem | null = null;
     let minDelta = Infinity;
 
-    for (const item of this.items) {
+    for (let i = this.activeStartIndex; i < this.items.length; i++) {
+      const item = this.items[i];
       if (item.judged) continue;
+      if (item.time > currentTime + this.WINDOW_GD) {
+        break;
+      }
       if (item.lane !== lane) continue;
 
       const delta = currentTime - item.time;
@@ -285,8 +315,12 @@ export class JudgeEngine {
     let minDelta = Infinity;
 
     const targetZone = zone.toUpperCase().trim();
-    for (const item of this.items) {
+    for (let i = this.activeStartIndex; i < this.items.length; i++) {
+      const item = this.items[i];
       if (item.judged) continue;
+      if (item.time > currentTime + this.WINDOW_GD) {
+        break;
+      }
       if (item.touchZone?.toUpperCase().trim() !== targetZone) continue;
 
       const delta = currentTime - item.time;
